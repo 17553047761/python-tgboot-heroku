@@ -1,60 +1,64 @@
 # coding: utf-8
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+import logging
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import os
+PORT = int(os.environ.get('PORT', 5000))
 
+# Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
+logger = logging.getLogger(__name__)
+TOKEN = 'YOURTELEGRAMBOTTOKEN'
+
+# Define a few command handlers. These usually take the two arguments update and
+# context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
+    """Send a message when the command /start is issued."""
     update.message.reply_text('Hi!')
 
 def help(update, context):
-    update.message.reply_text('Help!')
-
-
-def callback_query(bot,update):
-    # user=update.callback_query.from_user
-    # cmd=update.callback_query.data
-    # bot.send_message(user.id, cmd)
-    # update.callback_query.answer('OK')
-    # updater.dispatcher.add_handler(CallbackQueryHandler(callback_query))
-
-    
+    """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
 def echo(update, context):
-    # key = InlineKeyboardButton('哈哈哈', callback_data=f'new')
-    # keyboard = InlineKeyboardMarkup([[key]])
-    # update.message.reply_text('欢迎', reply_markup=keyboard)
-
-    # update.message.reply_text(photo='<https://telegram.org/img/t_logo.png')
-
-    # update.message
-
-    print(update.message)
-    # 回复消息，发送什么就回复什么
+    """Echo the user message."""
     update.message.reply_text(update.message.text)
 
 def error(update, context):
-    print('Update "%s" caused error "%s"', update, context.error)
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-if __name__ == '__main__':
-
-    # 参数1：机器人的token
-    # 参数3：使用的代理，是本地的代理，WinXray的代理
-
+def main():
+    """Start the bot."""
+    # Create the Updater and pass it your bot's token.
+    # Make sure to set use_context=True to use the new context based callbacks
+    # Post version 12 this will no longer be necessary
     updater = Updater('1836395637:AAEFLN82cMMOMAGgwFhfFTpUXbZqXvF7F04', use_context=True)
 
-    dispatcher = updater.dispatcher
+    # Get the dispatcher to register handlers
+    dp = updater.dispatcher
 
-    # 接收到/命令就执行某个方法
-    # /start  就执行 start 方法
-    # /help  就执行 help 方法
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help))
+    # on different commands - answer in Telegram
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help))
 
-    # 接收到任意文本消息就执行echo
-    dispatcher.add_handler(MessageHandler(Filters.text, echo))
+    # on noncommand i.e message - echo the message on Telegram
+    dp.add_handler(MessageHandler(Filters.text, echo))
 
-    dispatcher.add_error_handler(error)
+    # log all errors
+    dp.add_error_handler(error)
 
-    updater.start_polling()  # 使用发送请求获取消息模式
+    # Start the Bot
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=TOKEN)
+    updater.bot.setWebhook('https://awdawda123.herokuapp.com/' + TOKEN)
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT. This should be used most of the time, since
+    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
+
+if __name__ == '__main__':
+    main()
