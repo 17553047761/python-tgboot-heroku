@@ -1,4 +1,4 @@
 pip
 logparser
-telegram
+python-telegram-bot
 requests
