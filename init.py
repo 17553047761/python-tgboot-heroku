@@ -2,63 +2,63 @@
 import logging
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
+# 启动的端口
 PORT = int(os.environ.get('PORT', '8443'))
+# tgbot的token
 TOKEN = '1836395637:AAEFLN82cMMOMAGgwFhfFTpUXbZqXvF7F04'
+# 消息的回调地址,awdawda123：heroku的容器名
+url = "https://awdawda123.herokuapp.com/"
 
-# Enable logging
+# 日志
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
 
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
-    """Send a message when the command /start is issued."""
     update.message.reply_text('Hi!')
 
 def help(update, context):
-    """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
 def echo(update, context):
-    """Echo the user message."""
+
     update.message.reply_text(update.message.text)
 
 def error(update, context):
-    """Log Errors caused by Updates."""
+
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def main():
-    """Start the bot."""
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
+
+
     updater = Updater(TOKEN, use_context=True)
 
-    # Get the dispatcher to register handlers
+
     dp = updater.dispatcher
 
-    # on different commands - answer in Telegram
+    # 接收到/命令就执行某个方法
+    # /start  就执行 start 方法
+    # /help  就执行 help 方法
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
 
-    # on noncommand i.e message - echo the message on Telegram
+    # 非命令消息（普通消息）处理方法：echo
     dp.add_handler(MessageHandler(Filters.text, echo))
 
-    # log all errors
+    # 错误日志
     dp.add_error_handler(error)
 
-    # Start the Bot
+    # 开启机器人
+    # webhook_url：消息的回调路径，tg把消息转发到哪里，服务器的路径
+    # 路径是：https://【heroku项目名】.herokuapp.com
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN,
-                          webhook_url="https://awdawda123.herokuapp.com/" + TOKEN)
+                          webhook_url=url + TOKEN)
 
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
+
     updater.idle()
 
 if __name__ == '__main__':
