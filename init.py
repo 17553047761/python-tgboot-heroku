@@ -17,6 +17,7 @@ def callback_query(bot,update):
     # update.callback_query.answer('OK')
     # updater.dispatcher.add_handler(CallbackQueryHandler(callback_query))
 
+    
     update.message.reply_text('Help!')
 
 def echo(update, context):
